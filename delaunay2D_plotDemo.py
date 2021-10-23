@@ -6,6 +6,9 @@ Written by Jose M. Espadero < http://github.com/jmespadero/pyDelaunay2D >
 """
 import numpy as np
 from Delaunay3D import Delaunay2D
+import matplotlib.pyplot as plt
+import matplotlib.tri
+import matplotlib.collections
 
 if __name__ == '__main__':
 
@@ -36,9 +39,6 @@ if __name__ == '__main__':
     """
     Demostration of how to plot the data.
     """
-    import matplotlib.pyplot as plt
-    import matplotlib.tri
-    import matplotlib.collections
 
     # Create a plot with matplotlib.pyplot
     fig, ax = plt.subplots()

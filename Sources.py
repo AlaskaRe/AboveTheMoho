@@ -18,13 +18,14 @@ for row in wksht_lib.iter_rows(min_row=2, max_row=20, max_col=3):
 # then everytime I give the value to the point , it will modify the layerinformation, every point has the same list value
 # layerInformation = [None for i in range(len(stratums_lib))]
 
-# get the point data from the sheet
+# Read the worksheet "POSTION",get the point data.
 for r in wksht_pt.iter_rows(min_row=2, max_col=3):
     if r[0].value == None:
         break
     layerInformation = [None for i in range(len(stratums_lib))]
     Point[r[0].value, r[1].value, r[2].value] = layerInformation
 
+# Read the worksheet "POINT_ARGS", get the stratums of each point.
 for r in wksht_args.iter_rows(min_row=2, max_col=13):
 
     if r[0].value == None:
@@ -50,6 +51,3 @@ for r in wksht_args.iter_rows(min_row=2, max_col=13):
             t.append(sttms)
             t.append(da)
             Point[kywd][idx] = t
-
-
-print("hello ")
