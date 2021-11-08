@@ -45,6 +45,11 @@ class Delaunay2D:
         self.triangles[T1] = [T2, None, None]
         self.triangles[T2] = [T1, None, None]
 
+        # define the quarter triangles
+        self.midpoint = {}
+        self.mixedcoords = []
+        self.quarter_triangles = []
+
         # Compute circumcenters and circumradius for each triangle
         for t in self.triangles:
             self.circles[t] = self.circumcenter(t)
@@ -142,6 +147,7 @@ class Delaunay2D:
                     if startpoint in e and endpoint in e:
                         ind = self.edges.index(e)
                         del self.edges[ind]
+                        break
                 # Move to next CCW edge in opposite triangle
                 edge = (self.triangles[tri_op].index(T) + 1) % 3
                 T = tri_op
@@ -206,10 +212,6 @@ class Delaunay2D:
         return [(self.circles[(a, b, c)][0], sqrt(self.circles[(a, b, c)][1]))
                 for (a, b, c) in self.triangles if a > 3 and b > 3 and c > 3]
 
-    def exportEdges(self):
-
-        return self.edges
-
     def exportDT(self):
         """Export the current set of Delaunay coordinates and triangles.
         """
@@ -262,3 +264,90 @@ class Delaunay2D:
             regions[i-4] = r        # Store region.
 
         return vor_coors, regions
+
+    def exportExtendedEdges(self):
+        """
+        Export the non-repeated edges of the Delaunay trian
+        """
+        return self.edges
+
+    def exportExtendedTriangles(self):
+        """
+        Export the Extended Delaunay Triangles
+        """
+        return self.triangles
+
+    def exportExtendedCoords(self):
+
+        return self.coords
+
+    def generateMidpoint(self):
+        """
+        Generate the coords of the midpoint of edges.
+        """
+        alledges = self.exportExtendedEdges(self)
+        coords = self.exportExtendedCoords(self)
+        for i in alledges:
+            p1 = coords[i[0]]
+            p2 = coords[i[1]]
+            self.midpoint[i] = (p1+p2)/2
+
+    def generateMixedcoords(self):
+        """
+        Genertate a point sequence of the original point coords and the midpoint
+        """
+        origindp = self.exportExtendedCoords(self)
+        midp = self.exportMidpoint(self)
+
+        self.mixedcoords.append(origindp)
+        for i in midp:
+            self.mixedcoords.append(midp[i])
+
+    def generateQuarterTriangles(self):
+        """
+        Generate the one Quarter Triangles
+        """
+        delaunaytri = self.exportExtendedTriangles()
+
+        # Generate the midpoint dict and mixed coords list firstly.
+        self.generateMidpoint()
+        self.generateMixedcoords()
+
+        # Get the midpoint dictionary and the mixed coords
+        idx = 0
+        for tri in delaunaytri:
+            a = tri[0]
+            b = tri[1]
+            c = tri[2]
+            ab, bc, ac, mab, mbc, mac = None
+            try:
+                ab = self.midpoint[(a, b)]
+            except:
+                ab = self.midpoint[(b, a)]
+
+            try:
+                bc = self.midpoint[(b, c)]
+            except:
+                bc = self.midpoint[(c, b)]
+
+            try:
+                ac = self.midpoint[(a, c)]
+            except:
+                ac = self.midpoint[(c, a)]
+
+            mab = self.mixedcoords.index(ab)
+            mbc = self.mixedcoords.index(bc)
+            mac = self.mixedcoords.index(ac)
+
+            self.quarter_triangles[4*idx] = (mbc, mac, mab)
+            self.quarter_triangles[4*idx + 1] = (a, mab, mac)
+            self.quarter_triangles[4*idx + 2] = (mab, b, mbc)
+            self.quarter_triangles[4*idx + 3] = (mac, mbc, c)
+
+            idx += 1
+
+    def exportQuarterTriangles(self):
+
+        self.generateQuarterTriangles()
+
+        return self.quarter_triangles

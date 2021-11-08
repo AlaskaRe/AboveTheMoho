@@ -51,3 +51,5 @@ for r in wksht_args.iter_rows(min_row=2, max_col=13):
             t.append(sttms)
             t.append(da)
             Point[kywd][idx] = t
+
+print(Point)
