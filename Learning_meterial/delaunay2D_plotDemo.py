@@ -5,7 +5,10 @@ Simple delaunay2D demo with mathplotlib
 Written by Jose M. Espadero < http://github.com/jmespadero/pyDelaunay2D >
 """
 import numpy as np
-from delaunay2D import Delaunay2D
+from Delaunay3D import Delaunay2D
+import matplotlib.pyplot as plt
+import matplotlib.tri
+import matplotlib.collections
 
 if __name__ == '__main__':
 
@@ -25,20 +28,17 @@ if __name__ == '__main__':
     # dt = D.Delaunay2D() # Default frame
     center = np.mean(seeds, axis=0)
     dt = Delaunay2D(center, 50 * radius)
-    
+
     # Insert all seeds one by one
     for s in seeds:
         dt.addPoint(s)
 
     # Dump number of DT triangles
-    print (len(dt.exportTriangles()), "Delaunay triangles")
-       
+    print(len(dt.exportTriangles()), "Delaunay triangles")
+
     """
     Demostration of how to plot the data.
     """
-    import matplotlib.pyplot as plt
-    import matplotlib.tri
-    import matplotlib.collections
 
     # Create a plot with matplotlib.pyplot
     fig, ax = plt.subplots()
@@ -56,12 +56,12 @@ if __name__ == '__main__':
     for i, v in enumerate(seeds):
         plt.annotate(i, xy=v)
     """
-        
+
     # DEBUG: Use matplotlib to create a Delaunay triangulation (plot in green)
     # DEBUG: It should be equal to our result in dt_tris (plot in blue)
     # DEBUG: If boundary is diferent, try to increase the value of your margin
     # ax.triplot(matplotlib.tri.Triangulation(*zip(*seeds)), 'g--')
-    
+
     # DEBUG: plot the extended triangulation (plot in red)
     # edt_coords, edt_tris = dt.exportExtendedDT()
     # edt_x, edt_y = zip(*edt_coords)
@@ -72,17 +72,17 @@ if __name__ == '__main__':
     for c, r in dt.exportCircles():
         ax.add_artist(plt.Circle(c, r, color='k', fill=False, ls='dotted'))
     """
-    
+
     # Build Voronoi diagram as a list of coordinates and regions
     vc, vr = dt.exportVoronoiRegions()
-    
+
     # Plot annotated voronoi vertex
     """
     plt.scatter([v[0] for v in vc], [v[1] for v in vc], marker='.')
     for i, v in enumerate(vc):
         plt.annotate(i, xy=v)
     """
-    
+
     # Plot annotated voronoi regions as filled polygons
     """
     for r in vr:
@@ -95,7 +95,7 @@ if __name__ == '__main__':
     for r in vr:
         polygon = [vc[i] for i in vr[r]]       # Build polygon for each region
         plt.plot(*zip(*polygon), color="red")  # Plot polygon edges in red
-    
+
     # Dump plot to file
     # plt.savefig('output-delaunay2D.png', dpi=96)
     # plt.savefig('output-delaunay2D.svg', dpi=96)
@@ -122,4 +122,3 @@ if __name__ == '__main__':
 
             plt.show()
     """
-    
