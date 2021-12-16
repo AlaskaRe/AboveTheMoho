@@ -57,18 +57,26 @@ if __name__ == '__main__':
     for s in seeds:
         dt.addPoint(s)
 
-    # Create a demo of the TIN
+    # 3. Generate the Quater Triangles net
+    edges = dt.exportEdges()
+    pointcoord = dt.exportSequence()
 
-    # Create a plot with matplotlib.pyplot
-    fig, ax = plt.subplots()
-    ax.margins(0.1)
-    ax.set_aspect('equal')
-    plt.axis([center[0]-RADIUS, center[0] + RADIUS,
-             center[1]-RADIUS, center[1]+RADIUS])
+    edgeToMidPoint = {}
+    midPoint = {}
 
-    # Plot our Delaunay triangulation (plot in blue)
-    cx, cy = zip(*seeds)
-    dt_tris = dt.exportTriangles()
-    ax.triplot(matplotlib.tri.Triangulation(cx, cy, dt_tris), 'bo--')
+    # 3.1 EdgeToMidPoint
 
-    plt.show()
+    for e in edges:
+        edgeToMidPoint[e] = pointcoord[e[0]] + pointcoord[e[1]]
+
+    # 3.2 MidPoint
+    for key in edgeToMidPoint.keys():
+        listA = Point[pointcoord[key[0]]]
+        listB = Point[pointcoord[key[1]]]
+
+        midPoint[key] = generateMidPointList(listA, listB)
+
+    def generateMidPointList(a, b):
+        idxA, idxB = 0, 0
+        for i in Stratums_lib:
+            pass
