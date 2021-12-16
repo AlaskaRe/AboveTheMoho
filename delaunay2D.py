@@ -42,6 +42,7 @@ class Delaunay2D:
         T1 = (0, 1, 3)
         T2 = (2, 3, 1)
         self.edges = [(1, 3), (3, 0), (0, 1), (1, 2), (2, 3)]
+
         self.triangles[T1] = [T2, None, None]
         self.triangles[T2] = [T1, None, None]
 
@@ -124,6 +125,12 @@ class Delaunay2D:
                 if boundary[0][0] == boundary[-1][1]:
                     break
             else:
+                # And delete the common edge of this two triangles
+                try:
+                    self.edges.remove((T[(edge+1) % 3], T[(edge+2) % 3]))
+                except ValueError:
+                    pass
+
                 # Move to next CCW edge in opposite triangle
                 edge = (self.triangles[tri_op].index(T) + 1) % 3
                 T = tri_op
@@ -136,6 +143,9 @@ class Delaunay2D:
         # Retriangle the hole left by bad_triangles
         new_triangles = []
         for (e0, e1, tri_op) in boundary:
+            # Create new edge
+            new_edge = (idx, e0)
+            self.edges.append(new_edge)
             # Create a new triangle using point p and edge extremes
             T = (idx, e0, e1)
 
@@ -169,6 +179,19 @@ class Delaunay2D:
         # Filter out triangles with any vertex in the extended BBox
         return [(a-4, b-4, c-4)
                 for (a, b, c) in self.triangles if a > 3 and b > 3 and c > 3]
+
+    def exportEdges(self):
+        """Export the current list of Delaunay Triangles' edges
+        """
+        # Filter out edges
+        return[(a-4, b-4) for (a, b) in self.edges if a > 3 and b > 3]
+
+    def exportSequence(self):
+        """Export the current list of coordinates
+        """
+        coord = self.coords[4:]
+
+        return coord
 
     def exportCircles(self):
         """Export the circumcircles as a list of (center, radius)
