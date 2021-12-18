@@ -110,16 +110,22 @@ class QuaterTriangle3D:
                     pass
 
             # For convience, I take contA as a, contBetA as b, contB as c, contBetB as d. 1 means not null, 0 means null.
+            # If b=0, it represents that a only has one element, so does the c and d.So where is the data check process?!
             # case1. break the loop and raise the error
             if (contA == [] and contBetA != []) or (contB == [] and contBetB != []):
                 # that means the data are not right, error should be raised, but here  I just ignore this data.
                 return c
 
-            # case2. (a=1, b = 0/1) and (c = 0, d = 0)
-            elif contA != [] and contB == []:
-                top = (contA[0][0] + b[idxB][0])/2
-                bottom = (contA[-1][1] + b[idxB][1])/2
-                c.extend((top, bottom, a[x][2]))
+            # case2. (a=1, b = 0/1) and (c = 0/1, d = 0)
+            elif contA != [] and contBetB == []:
+                if contB == []:
+                    top = (contA[0][0] + b[idxB][0])/2
+                    bottom = (contA[-1][1] + b[idxB][1])/2
+                    c.extend((top, bottom, a[x][2]))
+                else:
+                    top = (contA[0][0] + contB[0][0])/2
+                    bottom = (contA[-1][1] + contB[0][1])/2
+                    c.extend(top, bottom, a[x][2])
                 if contBetA != []:
                     l = len(contBetA)+1
                     thickness = c[-1][0] - c[-1][1]
@@ -128,18 +134,15 @@ class QuaterTriangle3D:
                         newlayer = (top - acc * piecethk)
                         c.extend((newlayer, newlayer, contBetA[acc][2]))
 
-            # case3. (a = 1, b = 0) and (c = 1, d = 0)
-            elif (contA != [] and contBetA == []) and (contB != [] and contBetB == []):
-                # it means that only one element in contA if the data is correct
-                top = contA[0][0] + contB[0][0]
-                bottom = contA[0][1] + contB[0][1]
-                c.extend(top, bottom, a[x][2])
+            # case3. (a = 1, b = 1) and (c = 1, d = 1)
+            elif (contA != [] and contBetA != []) and (contB != [] and contBetB != []):
+                # in this situation, my mind stops at 4 elements in contA(contB)
+                # More complicated case is beyond my IQ
+                top = (contA[0][0] + contB[0][0])/2
+                bottom = (contA[-1][1] + contB[0][1])/2
 
-            # case4. (a = 1, b = 1) and (c = 1, d = 0)
-            elif (contA != [] and contBetA != []) and (contB != [] and contBetB == []):
-
-                出去透透气
-
+            # case4. (a=0, b=0) and (c=0, d=0)
+            elif(contA == [] and contBetA == []) and (contB == [] and contBetB == []):
+                return c
             else:
-                continue
-        return c
+                return self.generateMidPointList(b, a, startpoint)
