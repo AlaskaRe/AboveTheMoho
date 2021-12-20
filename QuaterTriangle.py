@@ -1,5 +1,6 @@
 import numpy as np
 from delaunay2D import Delaunay2D
+import copy
 
 
 class QuaterTriangle3D:
@@ -54,23 +55,31 @@ class QuaterTriangle3D:
 
         # 3. Generate the Quater Triangles net
         self.edges = dt.exportEdges()
-        self.pointcoord = dt.exportSequence()
+        self.pointSequence = dt.exportSequence()
+        self.extendedSq = copy.deepcopy(self.pointSequence)
 
         self.edgeToMidPoint = {}
         self.midPoint = {}
+        self.quaterTriangles = []
 
         # 3.1 EdgeToMidPoint
 
         for e in self.edges:
-            self.edgeToMidPoint[e] = self.pointcoord[e[0]
-                                                     ] + self.pointcoord[e[1]]
+            self.edgeToMidPoint[e] = self.pointSequence[e[0]
+                                                        ] + self.pointSequence[e[1]]
 
         # 3.2 MidPoint
         for key in self.edgeToMidPoint.keys():
-            listA = self.Point[self.pointcoord[key[0]]]
-            listB = self.Point[self.pointcoord[key[1]]]
+            listA = self.Point[self. pointSequence[key[0]]]
+            listB = self.Point[self. pointSequence[key[1]]]
 
-            self.midPoint[key] = []
+            self.midPoint[key] = self.generateMidPointList(listA, listB, 0)
+
+        # 3.3 Extended sequence
+        # Using the extend method built in list, that's not a deepcopy
+        self.extendedSq.extend(self.edgeToMidPoint.values())
+
+        # 3.4 QuaterTriangles
 
     def generateMidPointList(self, a, b, startpoint):
         """This is an iterate function, which constructed not very perfect, but can be deployed in most situations.
@@ -79,32 +88,45 @@ class QuaterTriangle3D:
         idxA, idxB = 0, 0
         c = []
 
+        # A great error has not been into consideration, to be contributed...
+        # WHAT SHOULD TO DO WHEN THE INDEX IS OUT OF THE RANGE.
+        # ALL IN ALL, this method is based on the absolute correct data of the stratums, and the algorithm I made here is not the same as what happened in nature.
+        # But, with more correct data and more powerful mathematic and computer science tool, we may could get the true information of the form of the all kinds of stratums.
         for i in range(startpoint, len(self.Stratums_lib)):
             contA, contB = [], []
             contBetA, contBetB = [], []
+            CutFromA, CutFromB = [], []
 
-            contBetA = a[idxA:len(a)]
+            contBetA = copy.deepcopy(a[idxA:len(a)])
             for x in range(idxA, len(a)):
                 if a[x][2] == self.Stratums_lib[i][0]:
                     contA.extend(a[x])
                     idxA = x+1
-            remainderA = a[idxA:len(a)]
+            try:
+                remainderA = copy.deepcopy(a[idxA:len(a)])
+            except IndexError:
+                pass
             contBetA.remove(remainderA)
             for valA in contA:
                 try:
+                    CutFromA = copy.deepcopy(contBetA)
                     contBetA.remove(valA)
                 except ValueError:
                     pass
 
-            contBetB = b[idxB:len(b)]
+            contBetB = copy.deepcopy(b[idxB:len(b)])
             for y in range(idxB, len(b)):
                 if b[y][2] == self.Stratums_lib[i][0]:
                     contB.extend(b[y])
                     idxB = y+1
-            remainderB = b[idxB:len(b)]
+            try:
+                remainderB = copy.deepcopy(b[idxB:len(b)])
+            except IndexError:
+                pass
             contBetB.remove(remainderB)
             for valB in contB:
                 try:
+                    CutFromB = copy.deepcopy(contBetB)
                     contBetB.remove(valB)
                 except ValueError:
                     pass
@@ -113,14 +135,18 @@ class QuaterTriangle3D:
             # If b=0, it represents that a only has one element, so does the c and d.So where is the data check process?!
             # case1. break the loop and raise the error
             if (contA == [] and contBetA != []) or (contB == [] and contBetB != []):
-                # that means the data are not right, error should be raised, but here  I just ignore this data.
+                # that means the data are not right, error should be raised, but here I just ignore this data.
                 return c
 
             # case2. (a=1, b = 0/1) and (c = 0/1, d = 0)
             elif contA != [] and contBetB == []:
                 if contB == []:
-                    top = (contA[0][0] + b[idxB][0])/2
-                    bottom = (contA[-1][1] + b[idxB][1])/2
+                    try:
+                        top = (contA[0][0] + b[idxB][0])/2
+                        bottom = (contA[-1][1] + b[idxB][0])/2
+                    except IndexError:
+                        top = (contA[0][0] + b[-1][1])/2
+                        bottom = (contA[-1][1] + b[-1][1])/2
                     c.extend((top, bottom, a[x][2]))
                 else:
                     top = (contA[0][0] + contB[0][0])/2
@@ -136,13 +162,22 @@ class QuaterTriangle3D:
 
             # case3. (a = 1, b = 1) and (c = 1, d = 1)
             elif (contA != [] and contBetA != []) and (contB != [] and contBetB != []):
-                # in this situation, my mind stops at 4 elements in contA(contB)
                 # More complicated case is beyond my IQ
-                top = (contA[0][0] + contB[0][0])/2
-                bottom = (contA[-1][1] + contB[0][1])/2
+                mini = min(len(contA), len(contB))
+                for slp in range(mini):
+                    try:
+                        ixa = CutFromA.index(contA[slp+1])
+                        ixb = CutFromB.index(contB[slp+1])
+                        return c.extend(self.generateMidPointList(CutFromA[:ixa], CutFromB[:ixb], startpoint))
+                    except IndexError:
+                        ixa = CutFromA.index(contA[slp])
+                        ixb = CutFromB.index(contB[slp])
+                        return c.extend(self.generateMidPointList(CutFromA[ixa:], CutFromB[ixb:], startpoint))
 
             # case4. (a=0, b=0) and (c=0, d=0)
             elif(contA == [] and contBetA == []) and (contB == [] and contBetB == []):
                 return c
+
+            # case5. the mirror of the itself.
             else:
-                return self.generateMidPointList(b, a, startpoint)
+                return c.extend(self.generateMidPointList(b, a, startpoint))
