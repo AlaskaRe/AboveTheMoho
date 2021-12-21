@@ -31,9 +31,12 @@ triang = tri.Triangulation(x, y)
 
 # Mask off unwanted triangles.
 
-triang.set_mask(np.hypot(x[triang.triangles].mean(axis=1),
-                         y[triang.triangles].mean(axis=1))
-                < min_radius)
+m = x[triang.triangles]
+xi = m.mean(axis=1)
+n = y[triang.triangles]
+yi = n.mean(axis=1)
+
+triang.set_mask(np.hypot(xi, yi) < min_radius)
 
 ###############################################################################
 # Plot the triangulation.

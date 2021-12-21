@@ -57,6 +57,7 @@ class QuaterTriangle3D:
         self.edges = dt.exportEdges()
         self.pointSequence = dt.exportSequence()
         self.extendedSq = copy.deepcopy(self.pointSequence)
+        self.baseTriangles = dt.exportTriangles()
 
         self.edgeToMidPoint = {}
         self.midPoint = {}
@@ -80,6 +81,18 @@ class QuaterTriangle3D:
         self.extendedSq.extend(self.edgeToMidPoint.values())
 
         # 3.4 QuaterTriangles
+        self.quaterTriangles = self.generateQuaterTriangles()
+
+        # 3.5 Ordered Triangles
+        self.orderedTriangles = {i: [] for i in range(len(self.extendedSq))}
+        for tri in self.quaterTriangles:
+            self.orderedTriangles[tri[0]] += tri
+            self.orderedTriangles[tri[1]] += tri
+            self.orderedTriangles[tri[2]] += tri
+
+        # 4. the net of every stratums
+        for i in self.Stratums_lib:
+            bad_bag = []
 
     def generateMidPointList(self, a, b, startpoint):
         """This is an iterate function, which constructed not very perfect, but can be deployed in most situations.
@@ -181,3 +194,30 @@ class QuaterTriangle3D:
             # case5. the mirror of the itself.
             else:
                 return c.extend(self.generateMidPointList(b, a, startpoint))
+
+    def generateQuaterTriangles(self):
+        quaterNet = []
+        for tri in self.baseTriangles.keys():
+            a, b, c = tri[0], tri[1], tri[2]
+            try:
+                mabcoord = self.edgeToMidPoint[(a, b)]
+            except:
+                mabcoord = self.edgeToMidPoint[(b, a)]
+
+            try:
+                mbccoord = self.edgeToMidPoint[(b, c)]
+            except:
+                mbccoord = self.edgeToMidPoint[(c, b)]
+
+            try:
+                maccoord = self.edgeToMidPoint[(a, c)]
+            except:
+                maccoord = self.edgeToMidPoint[(c, a)]
+
+            i = self.extendedSq.index(mbccoord)
+            j = self.extendedSq.index(maccoord)
+            k = self.extendedSq.index(mabcoord)
+            new_tri = [(i, j, k), (a, k, j), (k, b, i), (j, i, c)]
+            quaterNet.extend(new_tri)
+
+        return quaterNet
