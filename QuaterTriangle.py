@@ -91,8 +91,16 @@ class QuaterTriangle3D:
             self.orderedTriangles[tri[2]] += tri
 
         # 4. the net of every stratums
+        self.extendedPoint = copy.deepcopy(self.Point.update(self.midPoint))
         for i in self.Stratums_lib:
-            bad_bag = []
+            n = np.ones(shape=len(self.extendedSq), dtype=int)
+            for j in self.extendedPoint.values():
+                if self.point[i] == i[0]:
+                    n[j] += 1
+            nmax = n.amax()*2
+            listI =
+            for j in self.midPoint.values():
+                pass
 
     def generateMidPointList(self, a, b, startpoint):
         """This is an iterate function, which constructed not very perfect, but can be deployed in most situations.
