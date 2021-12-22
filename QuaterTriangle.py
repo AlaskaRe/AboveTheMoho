@@ -22,7 +22,7 @@ class QuaterTriangle3D:
             if row[0].value != None:
 
                 T = (row[0].value, row[1].value)
-                self.Stratums_lib.extend(T)
+                self.Stratums_lib.append(T)
 
         # 1.2 Generate the Point;
         # Read the worksheet "POSTION",get the point data.
@@ -43,7 +43,7 @@ class QuaterTriangle3D:
                 kywd = (r[2].value, r[3].value)
                 da = (r[7].value, r[8].value, r[11].value)
                 stratumslist = self.Point[kywd]
-                stratumslist.extend(da)
+                stratumslist.append(da)
 
         # 2. Generate the delaunay TIN
         seeds = np.asarray(list(self.Point.keys()))
@@ -71,8 +71,10 @@ class QuaterTriangle3D:
 
         # 3.2 MidPoint
         for key in self.edgeToMidPoint.keys():
-            listA = self.Point[self.pointSequence[key[0]]]
-            listB = self.Point[self. pointSequence[key[1]]]
+            A = tuple(self.pointSequence[key[0]])
+            listA = self.Point[A]
+            B = tuple(self. pointSequence[key[1]])
+            listB = self.Point[B]
 
             self.midPoint[key] = self.generateMidPointList(listA, listB, 0)
 
@@ -114,13 +116,15 @@ class QuaterTriangle3D:
             contBetA = copy.deepcopy(a[idxA:len(a)])
             for x in range(idxA, len(a)):
                 if a[x][2] == self.Stratums_lib[i][0]:
-                    contA.extend(a[x])
+                    contA.append(a[x])
                     idxA = x+1
             try:
                 remainderA = copy.deepcopy(a[idxA:len(a)])
+                for item in remainderA:
+                    contBetA.remove(item)
             except IndexError:
                 pass
-            contBetA.remove(remainderA)
+
             for valA in contA:
                 try:
                     CutFromA = copy.deepcopy(contBetA)
@@ -131,13 +135,15 @@ class QuaterTriangle3D:
             contBetB = copy.deepcopy(b[idxB:len(b)])
             for y in range(idxB, len(b)):
                 if b[y][2] == self.Stratums_lib[i][0]:
-                    contB.extend(b[y])
+                    contB.append(b[y])
                     idxB = y+1
             try:
                 remainderB = copy.deepcopy(b[idxB:len(b)])
+                for item in remainderB:
+                    contBetB.remove(item)
             except IndexError:
                 pass
-            contBetB.remove(remainderB)
+
             for valB in contB:
                 try:
                     CutFromB = copy.deepcopy(contBetB)
@@ -161,18 +167,18 @@ class QuaterTriangle3D:
                     except IndexError:
                         top = (contA[0][0] + b[-1][1])/2
                         bottom = (contA[-1][1] + b[-1][1])/2
-                    c.extend((top, bottom, a[x][2]))
+                    c.append((top, bottom, a[i][2]))
                 else:
                     top = (contA[0][0] + contB[0][0])/2
                     bottom = (contA[-1][1] + contB[0][1])/2
-                    c.extend(top, bottom, a[x][2])
+                    c.append(top, bottom, a[i][2])
                 if contBetA != []:
                     l = len(contBetA)+1
                     thickness = c[-1][0] - c[-1][1]
                     piecethk = thickness/l
                     for acc in len(contBetA):
                         newlayer = (top - acc * piecethk)
-                        c.extend((newlayer, newlayer, contBetA[acc][2]))
+                        c.append((newlayer, newlayer, contBetA[acc][2]))
 
             # case3. (a = 1, b = 1) and (c = 1, d = 1)
             elif (contA != [] and contBetA != []) and (contB != [] and contBetB != []):
@@ -190,7 +196,7 @@ class QuaterTriangle3D:
 
             # case4. (a=0, b=0) and (c=0, d=0)
             elif(contA == [] and contBetA == []) and (contB == [] and contBetB == []):
-                return c
+                return self.generateMidPointList(a, b, startpoint+1)
 
             # case5. the mirror of the itself.
             else:
