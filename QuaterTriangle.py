@@ -71,7 +71,7 @@ class QuaterTriangle3D:
 
         # 3.2 MidPoint
         for key in self.edgeToMidPoint.keys():
-            listA = self.Point[self. pointSequence[key[0]]]
+            listA = self.Point[self.pointSequence[key[0]]]
             listB = self.Point[self. pointSequence[key[1]]]
 
             self.midPoint[key] = self.generateMidPointList(listA, listB, 0)
@@ -91,16 +91,9 @@ class QuaterTriangle3D:
             self.orderedTriangles[tri[2]] += tri
 
         # 4. the net of every stratums
-        self.extendedPoint = copy.deepcopy(self.Point.update(self.midPoint))
-        for i in self.Stratums_lib:
-            n = np.ones(shape=len(self.extendedSq), dtype=int)
-            for j in self.extendedPoint.values():
-                if self.point[i] == i[0]:
-                    n[j] += 1
-            nmax = n.amax()*2
-            listI =
-            for j in self.midPoint.values():
-                pass
+        self.extendedPoint = copy.deepcopy(self.Point)
+        self.extendedPoint.update(self.midPoint)
+        self.stratumsDic = self.generateQuaterNet()
 
     def generateMidPointList(self, a, b, startpoint):
         """This is an iterate function, which constructed not very perfect, but can be deployed in most situations.
@@ -229,3 +222,35 @@ class QuaterTriangle3D:
             quaterNet.extend(new_tri)
 
         return quaterNet
+
+    def generateQuaterNet(self):
+        dic = {}
+        for idx0 in self.Stratums_lib:
+            n = np.ones(shape=len(self.extendedSq), dtype=int)
+            for j in self.extendedPoint.values():
+                if self.point[idx0] == idx0[0]:
+                    n[j] += 1
+            nmax = n.amax()*2
+            listI = [[] for aa in range(nmax)]
+            for itr in range(nmax):
+                listxy = np.asarray(self.extendedSq)
+                listz = np.asarray(np.zeros(len(self.extendedSq), int))
+                listI[itr] = np.column_stack(listxy, listz)
+            idx1 = 0
+            for j in self.midPoint:
+                if self.midPoint[j][2] == idx0[0]:
+                    idx2 = self.extendedSq.index(j)
+                    listI[2*idx1][idx2] = (j[0], j[1], self.midPoint[j][0])
+                    listI[2*idx1][idx2] = (j[0], j[1], self.midPoint[j][1])
+            dic[idx0] = copy.deepcopy(listI)
+
+        return dic
+
+    def exportQuaterTriangle(self):
+        return self.quaterTriangles
+
+    def exportStratumsSheet(self):
+        return self.stratumsDic
+
+    def generateSurface(self):
+        pass

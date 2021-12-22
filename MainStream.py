@@ -11,7 +11,23 @@ RADIUS = 1000
 
 if __name__ == '__main__':
 
-    qt = QuaterTriangle3D(wb, RADIUS)
+    quat = QuaterTriangle3D(wb, RADIUS)
+    quatdic = quat.exportStratumsSheet()
+    quatertriangle = quat.exportQuaterTriangle()
+    for i in quatdic:
+        fig = plt.figure(figsize=plt.figaspect(0.5))
+        for j in range(i.shape[0]):
+            arr = np.asarray(quatdic[i][j])
+            x, y, z = np.hsplit(arr, 3)
+            T = mtri.Triangulation(x, y, quatertriangle)
+            zf = z[T].mean(axis=1)
+            mask = zf <= 0
+            T.set_mask(mask)
+            ax = fig.add_subplot(1, 2, 1, projection='3d')
+            ax.plot_trisurf(T, z, cmap=plt.cm.CMRmap)
+
+
+"""
 
 x = []
 y = []
@@ -23,3 +39,5 @@ zf = z[T].mean(axis=1)
 mask = (zf == None)
 T.set_mask(mask)
 # then do what u want
+
+"""
