@@ -125,9 +125,9 @@ class QuaterTriangle3D:
             except IndexError:
                 pass
 
+            CutFromA = copy.deepcopy(contBetA)
             for valA in contA:
                 try:
-                    CutFromA = copy.deepcopy(contBetA)
                     contBetA.remove(valA)
                 except ValueError:
                     pass
@@ -144,9 +144,9 @@ class QuaterTriangle3D:
             except IndexError:
                 pass
 
+            CutFromB = copy.deepcopy(contBetB)
             for valB in contB:
                 try:
-                    CutFromB = copy.deepcopy(contBetB)
                     contBetB.remove(valB)
                 except ValueError:
                     pass
@@ -162,22 +162,28 @@ class QuaterTriangle3D:
             elif contA != [] and contBetB == []:
                 if contB == []:
                     try:
+                        bstms = listidx(self.Stratums_lib, b[idxB][2])
+                    except IndexError:
+                        idxB -= 1
+                        bstms = listidx(self.Stratums_lib, b[idxB][2])
+                    if i <= bstms:
                         top = (contA[0][0] + b[idxB][0])/2
                         bottom = (contA[-1][1] + b[idxB][0])/2
-                    except IndexError:
-                        top = (contA[0][0] + b[-1][1])/2
-                        bottom = (contA[-1][1] + b[-1][1])/2
-                    c.append((top, bottom, a[i][2]))
+                    else:
+                        top = (contA[0][0] + b[idxB][1])/2
+                        bottom = (contA[-1][1] + b[idxB][1])/2
+                    c.append((top, bottom, self.Stratums_lib[i][0]))
                 else:
                     top = (contA[0][0] + contB[0][0])/2
                     bottom = (contA[-1][1] + contB[0][1])/2
-                    c.append(top, bottom, a[i][2])
+                    # idxB += 1
+                    c.append((top, bottom, self.Stratums_lib[i][0]))
                 if contBetA != []:
                     l = len(contBetA)+1
                     thickness = c[-1][0] - c[-1][1]
                     piecethk = thickness/l
-                    for acc in len(contBetA):
-                        newlayer = (top - acc * piecethk)
+                    for acc in range(len(contBetA)):
+                        newlayer = (top - (acc + 1) * piecethk)
                         c.append((newlayer, newlayer, contBetA[acc][2]))
 
             # case3. (a = 1, b = 1) and (c = 1, d = 1)
@@ -188,19 +194,24 @@ class QuaterTriangle3D:
                     try:
                         ixa = CutFromA.index(contA[slp+1])
                         ixb = CutFromB.index(contB[slp+1])
-                        return c.extend(self.generateMidPointList(CutFromA[:ixa], CutFromB[:ixb], startpoint))
+                        c.append(self.generateMidPointList(
+                            CutFromA[:ixa], CutFromB[:ixb], startpoint))
                     except IndexError:
                         ixa = CutFromA.index(contA[slp])
                         ixb = CutFromB.index(contB[slp])
-                        return c.extend(self.generateMidPointList(CutFromA[ixa:], CutFromB[ixb:], startpoint))
+                        c.append(self.generateMidPointList(
+                            CutFromA[ixa:], CutFromB[ixb:], startpoint))
 
             # case4. (a=0, b=0) and (c=0, d=0)
             elif(contA == [] and contBetA == []) and (contB == [] and contBetB == []):
-                return self.generateMidPointList(a, b, startpoint+1)
+                continue
 
             # case5. the mirror of the itself.
             else:
-                return c.extend(self.generateMidPointList(b, a, startpoint))
+                c.extend(self.generateMidPointList(b[idxB-1:], a[idxA-1:], i))
+                return c
+
+        return c
 
     def generateQuaterTriangles(self):
         quaterNet = []
@@ -260,3 +271,10 @@ class QuaterTriangle3D:
 
     def generateSurface(self):
         pass
+
+
+def listidx(listA, b):
+
+    for i in range(len(listA)):
+        if listA[i][0] == b:
+            return i
