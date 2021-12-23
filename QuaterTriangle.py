@@ -78,6 +78,8 @@ class QuaterTriangle3D:
 
             self.midPoint[key] = self.generateMidPointList(listA, listB, 0)
 
+        print(self.midPoint)
+
         # 3.3 Extended sequence
         # Using the extend method built in list, that's not a deepcopy
         self.extendedSq.extend(self.edgeToMidPoint.values())
@@ -113,6 +115,7 @@ class QuaterTriangle3D:
             contBetA, contBetB = [], []
             CutFromA, CutFromB = [], []
 
+            # For generate the contA contBetA CutFromA
             contBetA = copy.deepcopy(a[idxA:len(a)])
             for x in range(idxA, len(a)):
                 if a[x][2] == self.Stratums_lib[i][0]:
@@ -132,6 +135,7 @@ class QuaterTriangle3D:
                 except ValueError:
                     pass
 
+            # For generate the contB contBetB CutFromB
             contBetB = copy.deepcopy(b[idxB:len(b)])
             for y in range(idxB, len(b)):
                 if b[y][2] == self.Stratums_lib[i][0]:
@@ -172,11 +176,11 @@ class QuaterTriangle3D:
                     else:
                         top = (contA[0][0] + b[idxB][1])/2
                         bottom = (contA[-1][1] + b[idxB][1])/2
+                        idxB += 1
                     c.append((top, bottom, self.Stratums_lib[i][0]))
                 else:
                     top = (contA[0][0] + contB[0][0])/2
                     bottom = (contA[-1][1] + contB[0][1])/2
-                    # idxB += 1
                     c.append((top, bottom, self.Stratums_lib[i][0]))
                 if contBetA != []:
                     l = len(contBetA)+1
@@ -194,13 +198,13 @@ class QuaterTriangle3D:
                     try:
                         ixa = CutFromA.index(contA[slp+1])
                         ixb = CutFromB.index(contB[slp+1])
-                        c.append(self.generateMidPointList(
-                            CutFromA[:ixa], CutFromB[:ixb], startpoint))
+                        c.extend(self.generateMidPointList(
+                            CutFromA[:ixa], CutFromB[:ixb], i))
                     except IndexError:
                         ixa = CutFromA.index(contA[slp])
                         ixb = CutFromB.index(contB[slp])
-                        c.append(self.generateMidPointList(
-                            CutFromA[ixa:], CutFromB[ixb:], startpoint))
+                        c.extend(self.generateMidPointList(
+                            CutFromA[ixa:], CutFromB[ixb:], i))
 
             # case4. (a=0, b=0) and (c=0, d=0)
             elif(contA == [] and contBetA == []) and (contB == [] and contBetB == []):
