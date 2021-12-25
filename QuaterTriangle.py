@@ -111,6 +111,17 @@ class QuaterTriangle3D:
         # ALL IN ALL, this method is based on the absolute correct data of the stratums, and the algorithm I made here is not the same as what happened in nature.
         # But, with more correct data and more powerful mathematic and computer science tool, we may could get the true information of the form of the all kinds of stratums.
         for i in range(startpoint, len(self.Stratums_lib)):
+
+            if len(a) == idxA and len(b) == idxB:
+                return c
+
+            CutFromA, contA, contBetA, idxA = generateList(
+                a, idxA, self.Stratums_lib[i][0])
+
+            CutFromB, contB, contBetB, idxB = generateList(
+                b, idxB, self.Stratums_lib[i][0])
+
+            """
             contA, contB = [], []
             contBetA, contBetB = [], []
             CutFromA, CutFromB = [], []
@@ -154,11 +165,16 @@ class QuaterTriangle3D:
                     contBetB.remove(valB)
                 except ValueError:
                     pass
-
+            """
             # For convience, I take contA as a, contBetA as b, contB as c, contBetB as d. 1 means not null, 0 means null.
             # If b=0, it represents that a only has one element, so does the c and d.So where is the data check process?!
+
+            # case0. (a=0, b=0) and (c=0, d=0)
+            if(contA == [] and contBetA == []) and (contB == [] and contBetB == []):
+                continue
+
             # case1. break the loop and raise the error
-            if (contA == [] and contBetA != []) or (contB == [] and contBetB != []):
+            elif (contA == [] and contBetA != []) or (contB == [] and contBetB != []):
                 # that means the data are not right, error should be raised, but here I just ignore this data.
                 return c
 
@@ -206,13 +222,27 @@ class QuaterTriangle3D:
                         c.extend(self.generateMidPointList(
                             CutFromA[ixa:], CutFromB[ixb:], i))
 
-            # case4. (a=0, b=0) and (c=0, d=0)
-            elif(contA == [] and contBetA == []) and (contB == [] and contBetB == []):
-                continue
-
-            # case5. the mirror of the itself.
+            # case4. reverse the a and b.
             else:
-                c.extend(self.generateMidPointList(b[idxB-1:], a[idxA-1:], i))
+                if a[idxA:] == []:
+                    c.extend(self.generateMidPointList(
+                        b[b.index(CutFromB[0]):], a[-1:], i))
+                else:
+                    try:
+                        c.extend(self.generateMidPointList(
+                            b[b.index(CutFromB[0]):], a[a.index(CutFromA[0]):], i))
+                    except IndexError:
+                        c.extend(self.generateMidPointList(
+                            b[b.index(CutFromB[0]):], a[idxA:], i))
+
+                """
+                try:
+                    c.extend(self.generateMidPointList(
+                        b[b.index(CutFromB[0]):], a, i))
+                except IndexError:
+                    c.extend(self.generateMidPointList(
+                        b[b.index(CutFromB[0]):], a[idxA-1:], i))
+                """
                 return c
 
         return c
@@ -282,3 +312,49 @@ def listidx(listA, b):
     for i in range(len(listA)):
         if listA[i][0] == b:
             return i
+
+
+def generateList(listOri, idx, targetvule):
+
+    cutFromOri = listOri[idx:]
+    contI, contInsideI = [], []
+    for i in range(len(listOri)):
+        if listOri[i][2] == targetvule:
+            contI.append(listOri[i])
+            idx = i + 1
+    try:
+        remainderI = listOri[idx:]
+        n = cutFromOri.index(remainderI[0])
+        cutFromOri = cutFromOri[:n]
+    except IndexError:
+        pass
+    contInsideI = copy.deepcopy(cutFromOri)
+
+    for ele in contI:
+        contInsideI.remove(ele)
+
+    """
+    contInsideI = copy.deepcopy(listOri[idx:len(listOri)])
+    contI, cutFromOri = [], []
+    for x in range(idx, len(listOri)):
+        if listOri[x][2] == targetvule:
+            contI.append(listOri[x])
+            idx = x+1
+    try:
+        remainderA = copy.deepcopy(listOri[idx:len(listOri)])
+        for item in remainderA:
+            contInsideI.remove(item)
+    except IndexError:
+        pass
+
+    cutFromOri = copy.deepcopy(contInsideI)
+
+    for valA in contI:
+        try:
+            contInsideI.remove(valA)
+        except ValueError:
+            pass
+    
+    """
+
+    return cutFromOri, contI, contInsideI, idx
