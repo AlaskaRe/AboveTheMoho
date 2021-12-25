@@ -78,7 +78,7 @@ class QuaterTriangle3D:
 
             self.midPoint[key] = self.generateMidPointList(listA, listB, 0)
 
-        print(self.midPoint)
+            print(self.midPoint)
 
         # 3.3 Extended sequence
         # Using the extend method built in list, that's not a deepcopy
@@ -199,6 +199,9 @@ class QuaterTriangle3D:
                     bottom = (contA[-1][1] + contB[0][1])/2
                     c.append((top, bottom, self.Stratums_lib[i][0]))
                 if contBetA != []:
+                    # ATTENTION -----------
+                    # WHEN contBetA exists, the reverse stratums situation should be done.
+                    # ----------------------------------------------------------------------
                     l = len(contBetA)+1
                     thickness = c[-1][0] - c[-1][1]
                     piecethk = thickness/l
@@ -209,6 +212,9 @@ class QuaterTriangle3D:
             # case3. (a = 1, b = 1) and (c = 1, d = 1)
             elif (contA != [] and contBetA != []) and (contB != [] and contBetB != []):
                 # More complicated case is beyond my IQ
+                # ATTENTION -----------
+                # WHEN contBetA exists, the reverse stratums situation should be done.
+                # ----------------------------------------------------------------------
                 mini = min(len(contA), len(contB))
                 for slp in range(mini):
                     try:
@@ -318,7 +324,7 @@ def generateList(listOri, idx, targetvule):
 
     cutFromOri = listOri[idx:]
     contI, contInsideI = [], []
-    for i in range(len(listOri)):
+    for i in range(idx, len(listOri)):
         if listOri[i][2] == targetvule:
             contI.append(listOri[i])
             idx = i + 1
