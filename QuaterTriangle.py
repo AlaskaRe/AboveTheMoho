@@ -135,25 +135,25 @@ class QuaterTriangle3D:
 
             # case2. (a=1, b = 0/1) and (c = 0/1, d = 0)
             elif contA != [] and contBetB == []:
-
-                try:
-                    bstms = listidx(self.Stratums_lib, b[idxB][2])
-                except IndexError:
-                    idxB -= 1
-                    bstms = listidx(self.Stratums_lib, b[idxB][2])
-                if i <= bstms:
-                    topb = b[idxB][0]
-                    bottomb = b[idxB][0]
-                else:
-                    topb = b[idxB][1]
-                    bottomb = b[idxB][1]
-                    idxB += 1
-                if contB == []:
-                    top = (contA[0][0] + topb)/2
-                    bottom = (contA[-1][1] + bottomb)/2
-                else:
+                if contB != []:
                     top = (contA[0][0] + contB[0][0])/2
                     bottom = (contA[-1][1] + contB[0][1])/2
+                else:
+                    try:
+                        bstms = listidx(self.Stratums_lib, b[idxB][2])
+                    except IndexError:
+                        idxB -= 1
+                        bstms = listidx(self.Stratums_lib, b[idxB][2])
+                    if i <= bstms:
+                        topb = b[idxB][0]
+                        bottomb = b[idxB][0]
+                    else:
+                        topb = b[idxB][1]
+                        bottomb = b[idxB][1]
+                        idxB += 1
+
+                    top = (contA[0][0] + topb)/2
+                    bottom = (contA[-1][1] + bottomb)/2
 
                 c.append((top, bottom, self.Stratums_lib[i][0]))
 
@@ -199,10 +199,6 @@ class QuaterTriangle3D:
 
             # case3. (a = 1, b = 1) and (c = 1, d = 1)
             elif (contA != [] and contBetA != []) and (contB != [] and contBetB != []):
-                # More complicated case is beyond my IQ
-                # ATTENTION -----------
-                # WHEN contBetA exists, the reverse stratums situation should be done.
-                # ----------------------------------------------------------------------
                 mini = min(len(contA), len(contB))
                 ixa, ixb = 0, 0
                 if mini > 1:
