@@ -1,6 +1,6 @@
 import copy
 
-
+"""
 def generateList(listOri, idx, targetvule):
 
     contInsideI = copy.deepcopy(listOri[idx:len(listOri)])
@@ -25,3 +25,7 @@ def generateList(listOri, idx, targetvule):
             pass
 
     return cutFromOri, contI, contInsideI
+"""
+
+for i in range(1, 2):
+    print(i)

@@ -169,22 +169,30 @@ class QuaterTriangle3D:
 
                     # with my oponion, only one reverse stratums is reasonable
                     elif len(contBetA) == 1:
-                        betastms = listidx(self.Stratums_lib, contBetA[2])
+                        betastms = listidx(self.Stratums_lib, contBetA[0][2])
                         if contB == []:
                             if betastms == bstms:
-                                subtop = 0
-                                subbottom = 0
-                            else:
-                                subtop = 0
-                                subbottom = 0
-                        else:
-                            subtop = 0
-                            subbottom = 0
-                        c.append(subtop, subbottom, contBetA[0][2])
+                                del c[-1]
+                                subtop = (contBetA[0][0] + b[idxB][0])/2
+                                subbottom = (contBetA[0][1] + b[idxB][1])/2
+                                c.append((subtop, subbottom, contBetA[0][2]))
 
-                    # More complicatied situation........HEADACHE
-                    # raise error, to check the data.
-                    # send email to me wukong14@outlook.com
+                                subtop = (contA[-1][0] + b[idxB][1])/2
+                                subbottom = (contA[-1][1] + b[idxB][1])/2
+                                c.append((subtop, subbottom, contBetA[0][2]))
+                                idxB += 1
+                            else:
+                                subtop = (contBetA[0][0] + topb)/2
+                                subbottom = (contBetA[0][1] + bottomb)/2
+                                c.append((subtop, subbottom, contBetA[0][2]))
+                        else:
+                            subtop = (contBetA[0][0] + contB[0][0])/2
+                            subbottom = (contBetA[0][1] + contB[0][0])/2
+                            c.append((subtop, subbottom, contBetA[0][2]))
+
+                    # More complicatied situation........HEADACHE...
+                    # step1.raise error, to check the data.
+                    # step2.if nothing wrong with the data, then send email to me(wukong14@outlook.com)
                     # ---------------------------------------------
                     else:
                         continue
@@ -196,18 +204,21 @@ class QuaterTriangle3D:
                 # WHEN contBetA exists, the reverse stratums situation should be done.
                 # ----------------------------------------------------------------------
                 mini = min(len(contA), len(contB))
-                for slp in range(mini):
-                    try:
-                        ixa = CutFromA.index(contA[slp+1])
-                        ixb = CutFromB.index(contB[slp+1])
+                ixa, ixb = 0, 0
+                if mini > 1:
+                    for slp in range(1, mini):
+                        ixa2 = CutFromA.index(contA[slp])
+                        ixb2 = CutFromB.index(contB[slp])
                         c.extend(self.generateMidPointList(
-                            CutFromA[:ixa], CutFromB[:ixb], i))
-                    except IndexError:
-                        ixa = CutFromA.index(contA[slp])
-                        ixb = CutFromB.index(contB[slp])
-                        c.extend(self.generateMidPointList(
-                            CutFromA[ixa:], CutFromB[ixb:], i))
+                            CutFromA[ixa:ixa2], CutFromB[ixb:ixb2], i))
+                        ixa = copy.deepcopy(ixa2)
+                        ixb = copy.deepcopy(ixb2)
+                else:
+                    c.extend(self.generateMidPointList(
+                        CutFromA[:-1], CutFromB[:-1], i))
 
+                c.extend(self.generateMidPointList(
+                    CutFromA[-1], CutFromB[-1], i))
             # case4. reverse the a and b.
             else:
                 if a[idxA:] == []:
