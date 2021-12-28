@@ -121,51 +121,6 @@ class QuaterTriangle3D:
             CutFromB, contB, contBetB, idxB = generateList(
                 b, idxB, self.Stratums_lib[i][0])
 
-            """
-            contA, contB = [], []
-            contBetA, contBetB = [], []
-            CutFromA, CutFromB = [], []
-
-            # For generate the contA contBetA CutFromA
-            contBetA = copy.deepcopy(a[idxA:len(a)])
-            for x in range(idxA, len(a)):
-                if a[x][2] == self.Stratums_lib[i][0]:
-                    contA.append(a[x])
-                    idxA = x+1
-            try:
-                remainderA = copy.deepcopy(a[idxA:len(a)])
-                for item in remainderA:
-                    contBetA.remove(item)
-            except IndexError:
-                pass
-
-            CutFromA = copy.deepcopy(contBetA)
-            for valA in contA:
-                try:
-                    contBetA.remove(valA)
-                except ValueError:
-                    pass
-
-            # For generate the contB contBetB CutFromB
-            contBetB = copy.deepcopy(b[idxB:len(b)])
-            for y in range(idxB, len(b)):
-                if b[y][2] == self.Stratums_lib[i][0]:
-                    contB.append(b[y])
-                    idxB = y+1
-            try:
-                remainderB = copy.deepcopy(b[idxB:len(b)])
-                for item in remainderB:
-                    contBetB.remove(item)
-            except IndexError:
-                pass
-
-            CutFromB = copy.deepcopy(contBetB)
-            for valB in contB:
-                try:
-                    contBetB.remove(valB)
-                except ValueError:
-                    pass
-            """
             # For convience, I take contA as a, contBetA as b, contB as c, contBetB as d. 1 means not null, 0 means null.
             # If b=0, it represents that a only has one element, so does the c and d.So where is the data check process?!
 
@@ -180,34 +135,59 @@ class QuaterTriangle3D:
 
             # case2. (a=1, b = 0/1) and (c = 0/1, d = 0)
             elif contA != [] and contBetB == []:
+
+                try:
+                    bstms = listidx(self.Stratums_lib, b[idxB][2])
+                except IndexError:
+                    idxB -= 1
+                    bstms = listidx(self.Stratums_lib, b[idxB][2])
+                if i <= bstms:
+                    topb = b[idxB][0]
+                    bottomb = b[idxB][0]
+                else:
+                    topb = b[idxB][1]
+                    bottomb = b[idxB][1]
+                    idxB += 1
                 if contB == []:
-                    try:
-                        bstms = listidx(self.Stratums_lib, b[idxB][2])
-                    except IndexError:
-                        idxB -= 1
-                        bstms = listidx(self.Stratums_lib, b[idxB][2])
-                    if i <= bstms:
-                        top = (contA[0][0] + b[idxB][0])/2
-                        bottom = (contA[-1][1] + b[idxB][0])/2
-                    else:
-                        top = (contA[0][0] + b[idxB][1])/2
-                        bottom = (contA[-1][1] + b[idxB][1])/2
-                        idxB += 1
-                    c.append((top, bottom, self.Stratums_lib[i][0]))
+                    top = (contA[0][0] + topb)/2
+                    bottom = (contA[-1][1] + bottomb)/2
                 else:
                     top = (contA[0][0] + contB[0][0])/2
                     bottom = (contA[-1][1] + contB[0][1])/2
-                    c.append((top, bottom, self.Stratums_lib[i][0]))
+
+                c.append((top, bottom, self.Stratums_lib[i][0]))
+
                 if contBetA != []:
-                    # ATTENTION -----------
-                    # WHEN contBetA exists, the reverse stratums situation should be done.
-                    # ----------------------------------------------------------------------
-                    l = len(contBetA)+1
-                    thickness = c[-1][0] - c[-1][1]
-                    piecethk = thickness/l
-                    for acc in range(len(contBetA)):
-                        newlayer = (top - (acc + 1) * piecethk)
-                        c.append((newlayer, newlayer, contBetA[acc][2]))
+
+                    if len(contA) != 1:
+                        l = len(contBetA)+1
+                        thickness = c[-1][0] - c[-1][1]
+                        piecethk = thickness/l
+                        for acc in range(len(contBetA)):
+                            hight = (top - (acc + 1) * piecethk)
+                            c.append((hight, hight, contBetA[acc][2]))
+
+                    # with my oponion, only one reverse stratums is reasonable
+                    elif len(contBetA) == 1:
+                        betastms = listidx(self.Stratums_lib, contBetA[2])
+                        if contB == []:
+                            if betastms == bstms:
+                                subtop = 0
+                                subbottom = 0
+                            else:
+                                subtop = 0
+                                subbottom = 0
+                        else:
+                            subtop = 0
+                            subbottom = 0
+                        c.append(subtop, subbottom, contBetA[0][2])
+
+                    # More complicatied situation........HEADACHE
+                    # raise error, to check the data.
+                    # send email to me wukong14@outlook.com
+                    # ---------------------------------------------
+                    else:
+                        continue
 
             # case3. (a = 1, b = 1) and (c = 1, d = 1)
             elif (contA != [] and contBetA != []) and (contB != [] and contBetB != []):
@@ -241,14 +221,6 @@ class QuaterTriangle3D:
                         c.extend(self.generateMidPointList(
                             b[b.index(CutFromB[0]):], a[idxA:], i))
 
-                """
-                try:
-                    c.extend(self.generateMidPointList(
-                        b[b.index(CutFromB[0]):], a, i))
-                except IndexError:
-                    c.extend(self.generateMidPointList(
-                        b[b.index(CutFromB[0]):], a[idxA-1:], i))
-                """
                 return c
 
         return c
@@ -338,29 +310,5 @@ def generateList(listOri, idx, targetvule):
 
     for ele in contI:
         contInsideI.remove(ele)
-
-    """
-    contInsideI = copy.deepcopy(listOri[idx:len(listOri)])
-    contI, cutFromOri = [], []
-    for x in range(idx, len(listOri)):
-        if listOri[x][2] == targetvule:
-            contI.append(listOri[x])
-            idx = x+1
-    try:
-        remainderA = copy.deepcopy(listOri[idx:len(listOri)])
-        for item in remainderA:
-            contInsideI.remove(item)
-    except IndexError:
-        pass
-
-    cutFromOri = copy.deepcopy(contInsideI)
-
-    for valA in contI:
-        try:
-            contInsideI.remove(valA)
-        except ValueError:
-            pass
-    
-    """
 
     return cutFromOri, contI, contInsideI, idx
