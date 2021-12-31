@@ -1,4 +1,5 @@
 import copy
+import numpy as np
 
 """
 def generateList(listOri, idx, targetvule):
@@ -26,6 +27,10 @@ def generateList(listOri, idx, targetvule):
 
     return cutFromOri, contI, contInsideI
 """
-
+"""
 for i in range(1, 2):
     print(i)
+"""
+listI = np.zeros(shape=(2, 200, 3))
+for i in listI:
+    print('hello')

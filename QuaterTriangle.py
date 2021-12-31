@@ -1,5 +1,4 @@
 import numpy as np
-from numpy.core.fromnumeric import shape
 from delaunay2D import Delaunay2D
 import copy
 
@@ -268,24 +267,23 @@ class QuaterTriangle3D:
         dic = {}
         for idx0 in self.Stratums_lib:
             n = np.zeros(shape=len(self.extendedSq), dtype=int)
+
             for j, item in enumerate(self.extendedPoint):
                 for subj in self.extendedPoint[item]:
                     if subj[2] == idx0[0]:
                         n[j] += 1
             nmax = n.max()*2
-            listI = []
-            for itr in range(nmax):
-                listxy = self.extendedSq
-                listz = np.asarray(np.zeros(len(self.extendedSq), int))
-                newlist = np.hstack(listxy, listz)
-                # listI[itr] = np.column_stack(listxy, listz)
-            idx1 = 0
-            for j in self.midPoint:
-                if self.midPoint[j][2] == idx0[0]:
-                    idx2 = self.extendedSq.index(j)
-                    listI[2*idx1][idx2] = (j[0], j[1], self.midPoint[j][0])
-                    listI[2*idx1][idx2] = (j[0], j[1], self.midPoint[j][1])
 
+            listI = np.zeros(shape=(nmax, len(self.extendedSq), 3))
+            listI[:, :, :2] = self.extendedSq
+
+            for nmb, pt in enumerate(self.extendedPoint):
+                ix = 0
+                for stm in self.extendedPoint[pt]:
+                    if stm[2] == idx0[0]:
+                        listI[ix, nmb, 2] = stm[0]
+                        listI[ix+1, nmb, 2] = stm[1]
+                        ix += 2
             dic[idx0] = copy.deepcopy(listI)
 
         return dic
