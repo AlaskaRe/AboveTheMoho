@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.core.fromnumeric import shape
 from delaunay2D import Delaunay2D
 import copy
 
@@ -66,8 +67,8 @@ class QuaterTriangle3D:
         # 3.1 EdgeToMidPoint
 
         for e in self.edges:
-            self.edgeToMidPoint[e] = self.pointSequence[e[0]
-                                                        ] + self.pointSequence[e[1]]
+            self.edgeToMidPoint[e] = (
+                self.pointSequence[e[0]] + self.pointSequence[e[1]])/2
 
         # 3.2 MidPoint
         for key in self.edgeToMidPoint.keys():
@@ -75,14 +76,16 @@ class QuaterTriangle3D:
             listA = self.Point[A]
             B = tuple(self. pointSequence[key[1]])
             listB = self.Point[B]
+            kwd = tuple(self.edgeToMidPoint[key])
+            self.midPoint[kwd] = self.generateMidPointList(listA, listB, 0)
 
-            self.midPoint[key] = self.generateMidPointList(listA, listB, 0)
-
-            print(self.midPoint)
+            # print(self.midPoint)
 
         # 3.3 Extended sequence
         # Using the extend method built in list, that's not a deepcopy
         self.extendedSq.extend(self.edgeToMidPoint.values())
+        arr = np.asarray(self.extendedSq)
+        self.extendedSq = arr.tolist()
 
         # 3.4 QuaterTriangles
         self.quaterTriangles = self.generateQuaterTriangles()
@@ -90,9 +93,9 @@ class QuaterTriangle3D:
         # 3.5 Ordered Triangles
         self.orderedTriangles = {i: [] for i in range(len(self.extendedSq))}
         for tri in self.quaterTriangles:
-            self.orderedTriangles[tri[0]] += tri
-            self.orderedTriangles[tri[1]] += tri
-            self.orderedTriangles[tri[2]] += tri
+            self.orderedTriangles[tri[0]].append(tri)
+            self.orderedTriangles[tri[1]].append(tri)
+            self.orderedTriangles[tri[2]].append(tri)
 
         # 4. the net of every stratums
         self.extendedPoint = copy.deepcopy(self.Point)
@@ -144,7 +147,7 @@ class QuaterTriangle3D:
                     except IndexError:
                         idxB -= 1
                         bstms = listidx(self.Stratums_lib, b[idxB][2])
-                    if i <= bstms:
+                    if i < bstms:
                         topb = b[idxB][0]
                         bottomb = b[idxB][0]
                     else:
@@ -169,8 +172,10 @@ class QuaterTriangle3D:
 
                     # with my oponion, only one reverse stratums is reasonable
                     elif len(contBetA) == 1:
-                        betastms = listidx(self.Stratums_lib, contBetA[0][2])
+
                         if contB == []:
+                            betastms = listidx(
+                                self.Stratums_lib, contBetA[0][2])
                             if betastms == bstms:
                                 del c[-1]
                                 subtop = (contBetA[0][0] + b[idxB][0])/2
@@ -179,7 +184,7 @@ class QuaterTriangle3D:
 
                                 subtop = (contA[-1][0] + b[idxB][1])/2
                                 subbottom = (contA[-1][1] + b[idxB][1])/2
-                                c.append((subtop, subbottom, contBetA[0][2]))
+                                c.append((subtop, subbottom, contA[-1][2]))
                                 idxB += 1
                             else:
                                 subtop = (contBetA[0][0] + topb)/2
@@ -214,7 +219,7 @@ class QuaterTriangle3D:
                         CutFromA[:-1], CutFromB[:-1], i))
 
                 c.extend(self.generateMidPointList(
-                    CutFromA[-1], CutFromB[-1], i))
+                    CutFromA[-1:], CutFromB[-1:], i))
             # case4. reverse the a and b.
             else:
                 if a[idxA:] == []:
@@ -234,7 +239,7 @@ class QuaterTriangle3D:
 
     def generateQuaterTriangles(self):
         quaterNet = []
-        for tri in self.baseTriangles.keys():
+        for tri in self.baseTriangles:
             a, b, c = tri[0], tri[1], tri[2]
             try:
                 mabcoord = self.edgeToMidPoint[(a, b)]
@@ -251,9 +256,9 @@ class QuaterTriangle3D:
             except:
                 maccoord = self.edgeToMidPoint[(c, a)]
 
-            i = self.extendedSq.index(mbccoord)
-            j = self.extendedSq.index(maccoord)
-            k = self.extendedSq.index(mabcoord)
+            i = self.extendedSq.index(mbccoord.tolist())
+            j = self.extendedSq.index(maccoord.tolist())
+            k = self.extendedSq.index(mabcoord.tolist())
             new_tri = [(i, j, k), (a, k, j), (k, b, i), (j, i, c)]
             quaterNet.extend(new_tri)
 
@@ -262,22 +267,25 @@ class QuaterTriangle3D:
     def generateQuaterNet(self):
         dic = {}
         for idx0 in self.Stratums_lib:
-            n = np.ones(shape=len(self.extendedSq), dtype=int)
-            for j in self.extendedPoint.values():
-                if self.point[idx0] == idx0[0]:
-                    n[j] += 1
-            nmax = n.amax()*2
-            listI = [[] for aa in range(nmax)]
+            n = np.zeros(shape=len(self.extendedSq), dtype=int)
+            for j, item in enumerate(self.extendedPoint):
+                for subj in self.extendedPoint[item]:
+                    if subj[2] == idx0[0]:
+                        n[j] += 1
+            nmax = n.max()*2
+            listI = []
             for itr in range(nmax):
-                listxy = np.asarray(self.extendedSq)
+                listxy = self.extendedSq
                 listz = np.asarray(np.zeros(len(self.extendedSq), int))
-                listI[itr] = np.column_stack(listxy, listz)
+                newlist = np.hstack(listxy, listz)
+                # listI[itr] = np.column_stack(listxy, listz)
             idx1 = 0
             for j in self.midPoint:
                 if self.midPoint[j][2] == idx0[0]:
                     idx2 = self.extendedSq.index(j)
                     listI[2*idx1][idx2] = (j[0], j[1], self.midPoint[j][0])
                     listI[2*idx1][idx2] = (j[0], j[1], self.midPoint[j][1])
+
             dic[idx0] = copy.deepcopy(listI)
 
         return dic
@@ -288,7 +296,7 @@ class QuaterTriangle3D:
     def exportStratumsSheet(self):
         return self.stratumsDic
 
-    def generateSurface(self):
+    def generateGroundSurface(self):
         pass
 
 
